@@ -6,10 +6,12 @@ import argparse, datetime, time
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
+from service_locator import ServiceProviderLocator
 
 import os,errno
 
 DEFAULT_MAX_HISTORY_SIZE = 200
+SERVICE_PORT = 4321
 
 class EchoLogger:
     def __init__(self, file):
@@ -48,7 +50,7 @@ class MultiEcho(LineReceiver):
 
 class MultiEchoFactory(Factory):
 
-    def __init__(self, history_size = DEFAULT_MAX_HISTORY_SIZE, logfile_name = None):
+    def __init__(self, history_size, logfile_name = None):
         self.echoers = []
         self.history = deque(maxlen = history_size)
         if logfile_name is None:
@@ -60,14 +62,17 @@ class MultiEchoFactory(Factory):
 
 
 
-def main(history_size):
-    reactor.listenTCP(4321, MultiEchoFactory(history_size))
+def main(history_size = DEFAULT_MAX_HISTORY_SIZE, legacy_port = False):
+    host = reactor.listenTCP(SERVICE_PORT if legacy_port else 0, MultiEchoFactory(history_size)).getHost()
+    reactor.listenUDP(SERVICE_PORT, ServiceProviderLocator(host.port))
     reactor.run()
+
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=
             """A server to re-echo any data sent to it, as well as the history of all data for this session.""")
-    parser.add_argument("--max_history", metavar="N", required=False, help="maximum history size for this server to store (default: 200)", default=DEFAULT_MAX_HISTORY_SIZE)
+    parser.add_argument("--max_history", metavar="NUMBER", required=False, help="maximum history size for this server to store (default: 200)")
+    parser.add_argument("--legacy_port", "-l", action='store_true', help="Disable automatic detection of IP and open a TCP connection on port 1234.")
     args = parser.parse_args()
-    main(args.max_history)
+    main(args.max_history, args.legacy_port)
