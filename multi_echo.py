@@ -55,7 +55,7 @@ class MultiEchoFactory(Factory):
         self.history = deque(maxlen = history_size)
         if logfile_name is None:
             self.filename = "logs/echo_data_{}.log".format(datetime.datetime.now()).replace(':', '_')
-        print("writing to a file called '{}'".format(self.filename))
+        print("Writing to a file called '{}'".format(self.filename))
 
     def buildProtocol(self, addr):
         return MultiEcho(self)
@@ -64,6 +64,7 @@ class MultiEchoFactory(Factory):
 
 def main(history_size = DEFAULT_MAX_HISTORY_SIZE, legacy_port = False):
     host = reactor.listenTCP(SERVICE_PORT if legacy_port else 0, MultiEchoFactory(history_size)).getHost()
+    print('Listening on port {}'.format(host.port))
     reactor.listenUDP(SERVICE_PORT, ServiceProviderLocator(host.port))
     reactor.run()
 
