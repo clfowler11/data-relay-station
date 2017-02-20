@@ -220,6 +220,7 @@ def main(sim_file=None, sim_speed=0.2, serial_port=None, legacy_port=False, logg
                 print('auto discovery disabled in legacy port mode')
             else:
                 reactor.listenUDP(SERVICE_PORT, ServiceProviderLocator(host.port))
+                print('listening on port {}'.format(SERVICE_PORT))
 
             threads.deferToThread(telem.resumeProducing)
             reactor.run()

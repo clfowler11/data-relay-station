@@ -65,7 +65,12 @@ class MultiEchoFactory(Factory):
 def main(history_size = DEFAULT_MAX_HISTORY_SIZE, legacy_port = False):
     host = reactor.listenTCP(SERVICE_PORT if legacy_port else 0, MultiEchoFactory(history_size)).getHost()
     print('Listening on port {}'.format(host.port))
-    reactor.listenUDP(SERVICE_PORT, ServiceProviderLocator(host.port))
+
+    if legacy_port:
+        print('auto discovery disabled in legacy port mode')
+    else:
+        reactor.listenUDP(SERVICE_PORT, ServiceProviderLocator(host.port))
+        
     reactor.run()
 
 

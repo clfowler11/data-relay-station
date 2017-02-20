@@ -4,6 +4,7 @@ class ServiceProviderLocator(DatagramProtocol):
 
     def __init__(self, host_port):
         self.host_port = host_port
+        print("Service provider locator initialized on {}".format(host_port))
 
     def datagramReceived(self, datagram, addr):
         try:
